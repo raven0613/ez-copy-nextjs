@@ -2,11 +2,35 @@
   width: 100%;
   //   border: #d2b48c 1px solid;
 }
+.cluster__control {
+  display: flex;
+}
 
 .cluster__card {
-  width: auto;
+  flex-grow: 1;
   height: 2rem;
-  padding: 0.2rem 0.4rem;
+  line-height: 2rem;
+  padding: 0 0.4rem;
+  margin-bottom: 0.4rem;
   border: 1px solid rgba($color: #d2b48c, $alpha: 1);
   border-radius: 0.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  &:hover {
+    background-color: rgb(245, 232, 212);
+  }
+
+  &_show {
+    background-color: rgb(238, 230, 210);
+  }
+  &.cancel {
+    width: 3rem;
+    border: rgb(247, 139, 139) solid 1px;
+    color: rgb(182, 72, 72);
+    flex-grow: 0;
+    margin-left: 0.25rem;
+    &:hover {
+      background-color: rgb(248, 160, 144);
+    }
+  }
 }
