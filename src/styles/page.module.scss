@@ -1,0 +1,56 @@
+/* Enable hover only on non-touch devices */
+@media (prefers-reduced-motion) {
+}
+
+.main {
+  width: 100%;
+  height: 100vh;
+  margin: auto;
+  display: flex;
+}
+
+.main_center {
+  width: 60%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 2rem 1fr auto;
+  row-gap: 0.25rem;
+  padding: 1rem 0;
+
+  &_cards {
+    width: calc(100% + 6px);
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      border-radius: 3px;
+      background-color: darkgrey;
+    }
+  }
+}
+
+.main_sidebar {
+  width: 15rem;
+  height: 100%;
+  padding: 1rem 1rem;
+}
+
+/* Tablet and Smaller Desktop */
+@media (min-width: 701px) and (max-width: 1120px) {
+}
+
+@media (prefers-color-scheme: dark) {
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}

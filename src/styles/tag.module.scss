@@ -1,0 +1,38 @@
+.cluster__container {
+  width: 100%;
+}
+.cluster__control {
+  display: flex;
+}
+
+.cluster__card {
+  flex-grow: 1;
+  height: 2rem;
+  line-height: 2rem;
+  padding: 0 0.4rem;
+  margin-bottom: 0.4rem;
+  border: 1px solid rgba($color: #d2b48c, $alpha: 1);
+  border-radius: 0.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all ease-out 0.15s;
+
+  &:hover {
+    background-color: rgb(248, 241, 230);
+  }
+
+  &_show {
+    background-color: rgb(238, 230, 210);
+  }
+  &.cancel {
+    width: 3rem;
+    border: rgb(247, 139, 139) solid 1px;
+    color: rgb(182, 72, 72);
+    flex-grow: 0;
+    margin-left: 0.25rem;
+    &:hover {
+      background-color: rgb(248, 160, 144);
+      color: rgb(138, 19, 19);
+    }
+  }
+}
