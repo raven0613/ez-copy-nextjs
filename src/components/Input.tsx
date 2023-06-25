@@ -13,8 +13,14 @@ export default function Input({ value, placeholder, handleChange }: IInput) {
     return (
         <>
             <input
+                onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}
                 ref={ref}
                 onChange={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     handleChange(e.target.value);
                 }}
                 placeholder={placeholder}

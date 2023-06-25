@@ -1,20 +1,78 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from '../styles/cluster.module.scss'
+import textCardStyles from '../styles/textCard.module.scss'
+import { More } from './More';
+import Input from './Input';
+import SettingIcon from './svg/SettingIcon';
+import CheckIcon from './svg/CheckIcon';
+import useClosePanel from '@/hooks/useClosePanel';
 
 interface IClusterCard {
     value: string;
     handleClick: (tag: string, isShown: boolean) => void;
     isShown: boolean;
+    handleClickMore: (tag: string) => void;
+    isShowMore: boolean;
+    handleEdit: (option: string) => void;
+    handleSubmit: (data: { oldValue: string, newValue: string }) => void;
+    handleDelete: (option: string) => void;
+    isEditing: boolean;
 }
 
-export function ClusterCard({ value, handleClick, isShown }: IClusterCard) {
-
+export function ClusterCard({ value, handleClick, isShown, handleClickMore, isShowMore, handleEdit, handleDelete, isEditing, handleSubmit }: IClusterCard) {
+    const [editValue, setEditValue] = useState<string>("");
+    useEffect(() => {
+        value && setEditValue(value);
+    }, [value])
     return (
         <>
             <div
                 className={`${styles.cluster__card} ${isShown && styles.cluster__card_show}`}
                 onClick={() => handleClick(value, isShown)}
-            >{value}</div>
+            >
+                {!isEditing && value}
+                {isEditing && <input
+                    placeholder="請輸入 tag 名稱"
+                    onFocus={(e) => e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length)}
+                    onClick={e => e.stopPropagation()}
+                    className={styles.cluster__card_input}
+                    value={editValue}
+                    onChange={e => setEditValue(e.target.value)}
+                />}
+
+                {isEditing && <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleSubmit({ oldValue: value, newValue: editValue });
+                    }}
+                    className={`${styles.cluster__card_moreBtn} ${styles.cluster__card_moreBtn_check}`}
+                >
+                    <CheckIcon />
+                </button>}
+
+                {!isEditing && <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleClickMore(value);
+                    }}
+                    className={`${styles.cluster__card_moreBtn}
+                    ${isShowMore && styles.cluster__card_moreBtn_clicked}
+                    `}
+                >
+                    <SettingIcon />
+                </button>}
+                <More
+                    options={["edit", "delete"]}
+                    handleClick={(option) => {
+                        if (option === "edit") handleEdit(value);
+                        else if (option === "delete") handleDelete(value);
+                    }}
+                    isShow={isShowMore}
+                />
+            </div>
+
         </>
     )
 }
@@ -31,18 +89,37 @@ interface IClusterList {
     allTagList: Array<string>;
     shownTagList: Array<string>;
     filteredTagList: Array<string>;
+    handleClickEdit: () => void;
+    handleSubmitEdit: (data: { oldValue: string, newValue: string }) => void;
+    handleDelete: (tag: string) => void;
+    isTextEditing: boolean;
 }
 
-export default function ClusterList({ handleClick, allTagList, shownTagList, filteredTagList, handleClickAll, handleClear }: IClusterList) {
+export default function ClusterList({ handleClick, allTagList, shownTagList, filteredTagList, handleClickAll, handleClear, handleSubmitEdit, handleDelete, isTextEditing, handleClickEdit }: IClusterList) {
+    const [showMoreTag, setShowMoreTag] = useState<string>("");
+    const [editingTag, setEditingTag] = useState<string>("");
     const [isSelectAll, setIsSelectAll] = useState<boolean>(false);
     const shownTagSet = new Set(shownTagList);
-    // console.log("shownTagList", shownTagList)
 
     useEffect(() => {
         if (allTagList.length === 0 && shownTagList.length === 0) return;
         if (allTagList.length === shownTagList.length) setIsSelectAll(true);
         else setIsSelectAll(false);
     }, [allTagList.length, shownTagList.length])
+
+    useEffect(() => {
+        if (!isTextEditing) return;
+        setEditingTag("");
+    }, [isTextEditing])
+
+    useEffect(() => {
+        const event = () => {
+            if (!showMoreTag) return;
+            setShowMoreTag("");
+        }
+        document.addEventListener("click", event);
+        return () => document.removeEventListener("click", event);
+    }, [showMoreTag]);
 
     return (
         <>
@@ -72,6 +149,23 @@ export default function ClusterList({ handleClick, allTagList, shownTagList, fil
                             handleClick={(tag: string, isShown: boolean) => {
                                 handleClick(tag, isShown);
                             }}
+                            handleClickMore={(tag: string) => {
+                                setShowMoreTag(tag);
+                                setEditingTag("");
+                            }}
+                            handleEdit={(option: string) => {
+                                setEditingTag(option);
+                                handleClickEdit();
+                            }}
+                            handleSubmit={({ oldValue, newValue }) => {
+                                handleSubmitEdit({ oldValue, newValue });
+                                setEditingTag("");
+                            }}
+                            handleDelete={(tag: string) => {
+                                handleDelete(tag);
+                            }}
+                            isShowMore={showMoreTag === item}
+                            isEditing={editingTag === item}
                         />
                     )
                 })}

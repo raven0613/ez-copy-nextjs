@@ -1,0 +1,28 @@
+.svg__container {
+  width: 100%;
+  height: 100%;
+  padding: 0.3rem 0.3rem;
+  stroke: currentColor;
+}
+
+.delete {
+  border-radius: 50%;
+  transition: all 0.15s ease-out;
+  &:hover {
+    background: rgba($color: #fa8072, $alpha: 1);
+  }
+}
+.edit {
+  border-radius: 50%;
+  transition: all 0.15s ease-out;
+  &:hover {
+    background: rgba($color: #87cefa, $alpha: 1);
+  }
+}
+.submit {
+  border-radius: 50%;
+  transition: all 0.15s ease-out;
+  &:hover {
+    background: rgba($color: #64d464, $alpha: 1);
+  }
+}

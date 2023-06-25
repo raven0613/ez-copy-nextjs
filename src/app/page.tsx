@@ -10,21 +10,22 @@ import Input from '@/components/Input';
 import ControlPanel from '@/components/ControlPanel';
 
 interface IFilter {
-  targetList: Array<IUnit | ICluster>
+  textList: Array<IUnit | ICluster>
   keyword: string;
-  tagList?: Array<string>;
+  shownTagList?: Array<string>;
 }
 
-const getDisplayList = ({ targetList, keyword, tagList }: IFilter) => {
-  const tagSet = new Set<string>(tagList);
-  const keywordFilteredList: (IUnit[] | ICluster[]) = targetList.filter(item => item.value.includes(keyword));
+const getDisplayList = ({ textList, keyword, shownTagList }: IFilter) => {
+  const tagSet = new Set<string>(shownTagList);
+  const keywordFilteredList: (IUnit[] | ICluster[]) = textList.filter(item => item.value.includes(keyword));
 
-  if (!tagList || tagList.length === 0) return [];
-  const clusterFilteredList = (keywordFilteredList as IUnit[]).filter(item => {
+  if (!shownTagList || shownTagList.length === 0) return textList;
+
+  const tagFilteredList = (keywordFilteredList as IUnit[]).filter(item => {
     const tags: string[] = item.tagList;
     return tags.some(tag => tagSet.has(tag));
   });
-  return clusterFilteredList || [];
+  return tagFilteredList;
 }
 
 interface ICluster {
@@ -49,7 +50,7 @@ export default function Home() {
   const [textKeyword, setTextKeyword] = useState<string>("");
   const [tagKeyword, setTagKeyword] = useState<string>("");
 
-  const displayList = getDisplayList({ targetList: textList, keyword: textKeyword, tagList: shownTagList });
+  const displayList = getDisplayList({ textList, keyword: textKeyword, shownTagList });
   // console.log(displayList)
 
   useEffect(() => {
@@ -60,6 +61,88 @@ export default function Home() {
     setShownTagList(initialData.shownTag || []);
   }, []);
 
+  function handleClick(tag: string, isShown: boolean) {
+    if (editingId) setEditingId("");
+    if (isShown) setShownTagList(pre => pre.filter(item => item !== tag));
+    else setShownTagList(pre => [...pre, tag]);
+
+    const saveData = {
+      user: {},
+      tags: allTagList,
+      shownTag: isShown ? shownTagList.filter(item => item !== tag) : [...shownTagList, tag],
+      posts: textList
+    }
+    localStorage.setItem("ez-copy", JSON.stringify(saveData));
+  }
+  function handleClickAll(isSelectAll: boolean) {
+    if (editingId) setEditingId("");
+    if (isSelectAll) setShownTagList([]);
+    else setShownTagList(allTagList);
+    const saveData = {
+      user: {},
+      tags: allTagList,
+      shownTag: isSelectAll ? [] : allTagList,
+      posts: textList
+    }
+    localStorage.setItem("ez-copy", JSON.stringify(saveData));
+  }
+  function handleClear() {
+    if (editingId) setEditingId("");
+    const saveData = {
+      user: {},
+      tags: allTagList,
+      shownTag: [],
+      posts: textList
+    }
+    localStorage.setItem("ez-copy", JSON.stringify(saveData));
+    setShownTagList([]);
+  }
+  function handleSubmitEdit({ oldValue, newValue }: { oldValue: string, newValue: string }) {
+    const newAllTag = allTagList.map(item => {
+      if (item === oldValue) return newValue;
+      return item;
+    });
+    const newShownTag = shownTagList.map(item => {
+      if (item === oldValue) return newValue;
+      return item;
+    });
+    const newTextList = textList.map(item => {
+      const newTags = item.tagList.map(tag => {
+        if (tag === oldValue) return newValue;
+        return tag;
+      })
+      return { ...item, tagList: newTags };
+    });
+    setAllTagList(newAllTag);
+    setShownTagList(newShownTag);
+    setTextList(newTextList);
+    const saveData = {
+      user: {},
+      tags: newAllTag,
+      shownTag: newShownTag,
+      posts: newTextList
+    }
+    localStorage.setItem("ez-copy", JSON.stringify(saveData));
+  }
+  function handleDelete(tag: string) {
+    const newAllTag = allTagList.filter(item => item !== tag);
+    const newShownTag = shownTagList.filter(item => item !== tag);
+    const newTextList = textList.map(item => {
+      const newTags = item.tagList.filter(tg => tg !== tag)
+      return { ...item, tagList: newTags };
+    });
+    setAllTagList(newAllTag);
+    setShownTagList(newShownTag);
+    setTextList(newTextList);
+
+    const saveData = {
+      user: {},
+      tags: newAllTag,
+      shownTag: newShownTag,
+      posts: newTextList
+    }
+    localStorage.setItem("ez-copy", JSON.stringify(saveData));
+  }
 
   return (
     <main className={styles.main}>
@@ -73,39 +156,13 @@ export default function Home() {
           allTagList={allTagList}
           filteredTagList={allTagList.filter(item => item.includes(tagKeyword))}
           shownTagList={shownTagList}
-          handleClick={(tag: string, isShown: boolean) => {
-            if (isShown) setShownTagList(pre => pre.filter(item => item !== tag));
-            else setShownTagList(pre => [...pre, tag]);
-
-            const saveData = {
-              user: {},
-              tags: allTagList,
-              shownTag: isShown ? shownTagList.filter(item => item !== tag) : [...shownTagList, tag],
-              posts: textList
-            }
-            localStorage.setItem("ez-copy", JSON.stringify(saveData));
-          }}
-          handleClickAll={(isSelectAll: boolean) => {
-            if (isSelectAll) setShownTagList([]);
-            else setShownTagList(allTagList);
-            const saveData = {
-              user: {},
-              tags: allTagList,
-              shownTag: isSelectAll ? [] : allTagList,
-              posts: textList
-            }
-            localStorage.setItem("ez-copy", JSON.stringify(saveData));
-          }}
-          handleClear={() => {
-            const saveData = {
-              user: {},
-              tags: allTagList,
-              shownTag: [],
-              posts: textList
-            }
-            localStorage.setItem("ez-copy", JSON.stringify(saveData));
-            setShownTagList([]);
-          }}
+          isTextEditing={editingId !== "" && editingId !== undefined}
+          handleClick={handleClick}
+          handleClickAll={handleClickAll}
+          handleClear={handleClear}
+          handleClickEdit={() => setEditingId("")}
+          handleSubmitEdit={handleSubmitEdit}
+          handleDelete={handleDelete}
         />
       </section>
 
@@ -147,7 +204,15 @@ export default function Home() {
               }}
               handleDelete={(id: string) => {
                 setTextList(pre => pre.filter(item => item.id !== id));
-                localStorage.setItem("ez-copy", JSON.stringify(textList.filter(item => item.id !== id)));
+                setEditingId("");
+
+                const saveData = {
+                  user: {},
+                  tags: allTagList,
+                  shownTag: shownTagList,
+                  posts: textList.filter(item => item.id !== id)
+                }
+                localStorage.setItem("ez-copy", JSON.stringify(saveData));
               }}
               handleClick={(id: string) => {
                 navigator.clipboard.writeText(unit.value);
@@ -158,7 +223,6 @@ export default function Home() {
               isExist={existId === unit.id}
             />
           )}
-          {textList.length === 0 && <span>No Data</span>}
         </div>
         <ControlPanel
           allTags={allTagList}

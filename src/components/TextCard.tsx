@@ -3,6 +3,9 @@ import styles from '../styles/textCard.module.scss'
 import useAutosizeTextarea from "../hooks/useAutosizeTextarea"
 import { IUnit } from "@/app/page";
 import { SuggestList, ISuggestList, suggestList } from "@/components/ControlPanel"
+import EditIcon from "./svg/EditIcon";
+import DeleteIcon from "./svg/DeleteIcon";
+import CheckIcon from "./svg/CheckIcon";
 
 interface ITextCard {
     data: IUnit
@@ -94,7 +97,8 @@ export default function TextCard({ data, handleSave, handleDelete, handleClick, 
                             e.stopPropagation();
                             handleSave({ id: data.id, value: inputValue, tagList });
                         }}
-                    >V
+                    >
+                        <CheckIcon />
                     </button>}
                     {!idEditing && <button
                         className={`${styles.textCard__button} ${styles.textCard__button_edit}`}
@@ -103,7 +107,8 @@ export default function TextCard({ data, handleSave, handleDelete, handleClick, 
                             handleEdit(data.id);
                             setInputValue(data.value);
                         }}
-                    >E
+                    >
+                        <EditIcon />
                     </button>}
                     <button
                         className={`${styles.textCard__button} ${styles.textCard__button_delete}`}
@@ -111,7 +116,8 @@ export default function TextCard({ data, handleSave, handleDelete, handleClick, 
                             e.stopPropagation();
                             handleDelete(data.id);
                         }}
-                    >X
+                    >
+                        <DeleteIcon />
                     </button>
                 </div>
             </div>

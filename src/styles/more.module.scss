@@ -1,0 +1,30 @@
+.more__container {
+  width: fit-content;
+  height: fit-content;
+  position: absolute;
+  left: 105%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  background-color: white;
+  opacity: 1;
+  transition: all 0.15s ease-out;
+  z-index: 10;
+}
+
+.more__option {
+  width: 2rem;
+  height: 2rem;
+  background-color: rgb(231, 231, 231);
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  transition: all 0.15s ease-out;
+  &:hover {
+    color: white;
+  }
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
