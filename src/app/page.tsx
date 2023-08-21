@@ -1,9 +1,9 @@
 "use client";
+import { useEffect, useRef, useState } from 'react';
+import uuid from 'react-uuid';
 import Image from 'next/image'
 import styles from '../styles/page.module.scss'
 import scrollStyle from '../styles/scrollbar.module.scss'
-import { useEffect, useState } from 'react';
-import uuid from 'react-uuid';
 import TextCard from '../components/TextCard'
 import ClusterList from '@/components/ClusterList';
 import Input from '@/components/Input';
@@ -50,8 +50,7 @@ export default function Home() {
   const [textKeyword, setTextKeyword] = useState<string>("");
   const [tagKeyword, setTagKeyword] = useState<string>("");
 
-  const displayList = getDisplayList({ textList, keyword: textKeyword, shownTagList });
-  // console.log(displayList)
+  const [displayTextList, setDisplayTextList] = useState<Array<IUnit>>(getDisplayList({ textList, keyword: textKeyword, shownTagList }) as IUnit[]);
 
   useEffect(() => {
     if (!localStorage.getItem("ez-copy")) return;
@@ -59,25 +58,44 @@ export default function Home() {
     setTextList(initialData.posts || []);
     setAllTagList(initialData.tags || [])
     setShownTagList(initialData.shownTag || []);
+    setDisplayTextList(getDisplayList({
+      textList: initialData.posts || [],
+      keyword: "",
+      shownTagList: initialData.shownTag || []
+    }) as IUnit[])
   }, []);
 
+  // 點選 tags
   function handleClick(tag: string, isShown: boolean) {
     if (editingId) setEditingId("");
-    if (isShown) setShownTagList(pre => pre.filter(item => item !== tag));
-    else setShownTagList(pre => [...pre, tag]);
+    const newShownTags = isShown ? shownTagList.filter(item => item !== tag) : [...shownTagList, tag];
+    setShownTagList(newShownTags);
+
+    setDisplayTextList(getDisplayList({
+      textList: textList || [],
+      keyword: textKeyword || "",
+      shownTagList: newShownTags || []
+    }) as IUnit[]);
 
     const saveData = {
       user: {},
       tags: allTagList,
-      shownTag: isShown ? shownTagList.filter(item => item !== tag) : [...shownTagList, tag],
+      shownTag: newShownTags,
       posts: textList
     }
     localStorage.setItem("ez-copy", JSON.stringify(saveData));
   }
   function handleClickAll(isSelectAll: boolean) {
     if (editingId) setEditingId("");
-    if (isSelectAll) setShownTagList([]);
-    else setShownTagList(allTagList);
+    const newShownTags = isSelectAll ? [] : allTagList;
+    setShownTagList(newShownTags);
+
+    setDisplayTextList(getDisplayList({
+      textList: textList || [],
+      keyword: textKeyword || "",
+      shownTagList: newShownTags || []
+    }) as IUnit[]);
+
     const saveData = {
       user: {},
       tags: allTagList,
@@ -88,6 +106,13 @@ export default function Home() {
   }
   function handleClear() {
     if (editingId) setEditingId("");
+
+    setDisplayTextList(getDisplayList({
+      textList: textList || [],
+      keyword: textKeyword || "",
+      shownTagList: []
+    }) as IUnit[]);
+
     const saveData = {
       user: {},
       tags: allTagList,
@@ -116,6 +141,13 @@ export default function Home() {
     setAllTagList(newAllTag);
     setShownTagList(newShownTag);
     setTextList(newTextList);
+
+    setDisplayTextList(getDisplayList({
+      textList: newTextList || [],
+      keyword: textKeyword || "",
+      shownTagList: newShownTag || []
+    }) as IUnit[]);
+
     const saveData = {
       user: {},
       tags: newAllTag,
@@ -134,6 +166,12 @@ export default function Home() {
     setAllTagList(newAllTag);
     setShownTagList(newShownTag);
     setTextList(newTextList);
+
+    setDisplayTextList(getDisplayList({
+      textList: newTextList || [],
+      keyword: textKeyword || "",
+      shownTagList: newShownTag || []
+    }) as IUnit[]);
 
     const saveData = {
       user: {},
@@ -173,37 +211,45 @@ export default function Home() {
           handleChange={(keyword) => setTextKeyword(keyword)}
         />
         <div className={`${styles.main_center_cards} ${scrollStyle.scroll_bar}`}>
-          {displayList.length > 0 && displayList.map(unit =>
+          {displayTextList.length > 0 && displayTextList.map((unit, i) =>
             <TextCard
               key={unit.id}
+              index={i}
               data={unit as IUnit}
               allTags={allTagList}
               handleSave={({ id, value, tagList }) => {
                 // save post
-                setTextList(pre => pre.map(item => {
+                const editedList = textList.map(item => {
                   if (item.id === id) return { id, value, tagList };
                   return item;
-                }));
+                })
+                setTextList(editedList);
                 setEditingId("");
 
                 // save tags
                 const allTagSet = new Set(allTagList);
                 const filteredTags = tagList.filter(item => !allTagSet.has(item));
-                setAllTagList(pre => [...pre, ...filteredTags]);
-                const shownTagSet = new Set(shownTagList);
-                const filteredShownTags = tagList.filter(item => !shownTagSet.has(item));
-                setShownTagList(pre => [...pre, ...filteredShownTags])
+                const editedAllTagList = [...allTagList, ...filteredTags];
+                setAllTagList(editedAllTagList);
+
+                setDisplayTextList(getDisplayList({
+                  textList: editedList || [],
+                  keyword: textKeyword || "",
+                  shownTagList: shownTagList || []
+                }) as IUnit[]);
 
                 const saveData = {
                   user: {},
-                  tags: [...allTagList, ...filteredTags],
-                  shownTag: [...shownTagList, ...filteredShownTags],
-                  posts: [...textList, { id: uuid(), value, tagList, bgColor: "" }]
+                  tags: editedAllTagList,
+                  shownTag: shownTagList,
+                  posts: editedList
                 }
                 localStorage.setItem("ez-copy", JSON.stringify(saveData));
               }}
               handleDelete={(id: string) => {
-                setTextList(pre => pre.filter(item => item.id !== id));
+                const newTextList = textList.filter(item => item.id !== id);
+                // setTextList(pre => pre.filter(item => item.id !== id));
+                setTextList(newTextList);
                 setEditingId("");
 
                 const saveData = {
@@ -212,6 +258,11 @@ export default function Home() {
                   shownTag: shownTagList,
                   posts: textList.filter(item => item.id !== id)
                 }
+                setDisplayTextList(getDisplayList({
+                  textList: newTextList || [],
+                  keyword: textKeyword,
+                  shownTagList: shownTagList || []
+                }) as IUnit[]);
                 localStorage.setItem("ez-copy", JSON.stringify(saveData));
               }}
               handleClick={(id: string) => {
@@ -219,6 +270,31 @@ export default function Home() {
                 setCopiedId(id);
               }}
               handleEdit={(id: string) => setEditingId(id)}
+              handleMoveCard={(dragIndex: number, hoverIndex: number) => {
+                const dragPostId = displayTextList[dragIndex].id;
+                const hoverPostId = displayTextList[hoverIndex].id;
+                let dragPostIndexInAllPost: number = 0;
+                let hoverPostIndexInAllPost: number = 0;
+                for (let i = 0; i < textList.length; i++) {
+                  if (textList[i].id === dragPostId) dragPostIndexInAllPost = i;
+                  if (textList[i].id === hoverPostId) hoverPostIndexInAllPost = i;
+                }
+
+                const newDisplayTextList = [...displayTextList];
+                [newDisplayTextList[dragIndex], newDisplayTextList[hoverIndex]] = [newDisplayTextList[hoverIndex], newDisplayTextList[dragIndex]]
+                setDisplayTextList(newDisplayTextList);
+                const newTextList = [...textList];
+                [newTextList[dragPostIndexInAllPost], newTextList[hoverPostIndexInAllPost]] = [newTextList[hoverPostIndexInAllPost], newTextList[dragPostIndexInAllPost]]
+                setTextList(newTextList);
+
+                const saveData = {
+                  user: {},
+                  tags: allTagList,
+                  shownTag: shownTagList,
+                  posts: newTextList
+                }
+                localStorage.setItem("ez-copy", JSON.stringify(saveData));
+              }}
               idEditing={editingId === unit.id}
               isExist={existId === unit.id}
             />
@@ -233,21 +309,30 @@ export default function Home() {
             if (existedUnit) return setExsitId(existedUnit.id);
 
             // save post
-            setTextList(pre => [...pre, { id: uuid(), value: inputValue, tagList }]);
+            const newTextList = [...textList, { id: uuid(), value: inputValue, tagList }];
+            setTextList(newTextList);
 
             // save tags
             const allTagSet = new Set(allTagList);
             const filteredTags = tagList.filter(item => !allTagSet.has(item));
-            setAllTagList(pre => [...pre, ...filteredTags]);
+            const newAllTagList = [...allTagList, ...filteredTags];
+            setAllTagList(newAllTagList);
             const shownTagSet = new Set(shownTagList);
             const filteredShownTags = tagList.filter(item => !shownTagSet.has(item));
-            setShownTagList(pre => [...pre, ...filteredShownTags])
+            const newShownTagList = [...shownTagList, ...filteredShownTags];
+            setShownTagList(newShownTagList)
+
+            setDisplayTextList(getDisplayList({
+              textList: newTextList || [],
+              keyword: textKeyword,
+              shownTagList: shownTagList || []
+            }) as IUnit[]);
 
             const saveData = {
               user: {},
-              tags: [...allTagList, ...filteredTags],
-              shownTag: [...shownTagList, ...filteredShownTags],
-              posts: [...textList, { id: uuid(), value: inputValue, tagList, bgColor: "" }]
+              tags: newAllTagList,
+              shownTag: newShownTagList,
+              posts: newTextList
             }
             localStorage.setItem("ez-copy", JSON.stringify(saveData));
           }}

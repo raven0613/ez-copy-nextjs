@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import styles from '../styles/cluster.module.scss'
-import textCardStyles from '../styles/textCard.module.scss'
+import { useEffect, useRef, useState } from 'react';
+import styles from '../styles/cluster.module.scss';
+import textCardStyles from '../styles/textCard.module.scss';
 import { More } from './More';
 import Input from './Input';
 import SettingIcon from './svg/SettingIcon';
@@ -9,6 +9,7 @@ import useClosePanel from '@/hooks/useClosePanel';
 
 interface IClusterCard {
     value: string;
+    index: number;
     handleClick: (tag: string, isShown: boolean) => void;
     isShown: boolean;
     handleClickMore: (tag: string) => void;
@@ -16,19 +17,24 @@ interface IClusterCard {
     handleEdit: (option: string) => void;
     handleSubmit: (data: { oldValue: string, newValue: string }) => void;
     handleDelete: (option: string) => void;
+    handleMoveCard: (dragIndex: number, hoverIndex: number) => void;
     isEditing: boolean;
 }
 
-export function ClusterCard({ value, handleClick, isShown, handleClickMore, isShowMore, handleEdit, handleDelete, isEditing, handleSubmit }: IClusterCard) {
+export function ClusterCard({ value, handleClick, isShown, handleClickMore, isShowMore, handleEdit, handleDelete, isEditing, handleSubmit, index, handleMoveCard }: IClusterCard) {
     const [editValue, setEditValue] = useState<string>("");
+    const cardRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         value && setEditValue(value);
-    }, [value])
+    }, [value]);
+
     return (
         <>
             <div
                 className={`${styles.cluster__card} ${isShown && styles.cluster__card_show}`}
                 onClick={() => handleClick(value, isShown)}
+                ref={cardRef}
             >
                 {!isEditing && value}
                 {isEditing && <input
@@ -140,10 +146,11 @@ export default function ClusterList({ handleClick, allTagList, shownTagList, fil
                 >全消</div>
             </div>
             <div className={styles.cluster__container}>
-                {filteredTagList.map(item => {
+                {filteredTagList.map((item, i) => {
                     return (
                         <ClusterCard
-                            key={item}
+                            key={`${i}-${item}`}
+                            index={i}
                             value={item}
                             isShown={shownTagSet.has(item)}
                             handleClick={(tag: string, isShown: boolean) => {
@@ -163,6 +170,9 @@ export default function ClusterList({ handleClick, allTagList, shownTagList, fil
                             }}
                             handleDelete={(tag: string) => {
                                 handleDelete(tag);
+                            }}
+                            handleMoveCard={(dragIndex: number, hoverIndex: number) => {
+
                             }}
                             isShowMore={showMoreTag === item}
                             isEditing={editingTag === item}
