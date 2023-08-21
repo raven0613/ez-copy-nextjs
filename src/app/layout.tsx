@@ -1,7 +1,7 @@
+'use client';
 import './globals.css'
-import { Inter } from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'] })
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 export const metadata = {
   title: 'Create Next App',
@@ -15,7 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <DndProvider backend={HTML5Backend}>
+        <body>{children}</body>
+      </DndProvider>
     </html>
   )
 }
