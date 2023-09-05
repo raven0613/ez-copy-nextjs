@@ -37,6 +37,7 @@ export function ClusterCard({ value, handleClick, isShown, handleClickMore, isSh
                 ref={cardRef}
             >
                 <p className={styles.cluster__card_value}>{!isEditing && value}</p>
+
                 {isEditing && <input
                     placeholder="請輸入 tag 名稱"
                     onFocus={(e) => e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length)}
@@ -45,18 +46,6 @@ export function ClusterCard({ value, handleClick, isShown, handleClickMore, isSh
                     value={editValue}
                     onChange={e => setEditValue(e.target.value)}
                 />}
-
-                {isEditing && <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleSubmit({ oldValue: value, newValue: editValue });
-                        setEditValue("");
-                    }}
-                    className={`${styles.cluster__card_moreBtn} ${styles.cluster__card_moreBtn_check}`}
-                >
-                    <CheckIcon />
-                </button>}
 
                 {!isEditing && <button
                     onClick={(e) => {
@@ -71,7 +60,18 @@ export function ClusterCard({ value, handleClick, isShown, handleClickMore, isSh
                     <SettingIcon />
                 </button>}
             </div>
-            <More
+            {isEditing && <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSubmit({ oldValue: value, newValue: editValue });
+                    setEditValue("");
+                }}
+                className={`${styles.cluster__card_moreBtn} ${styles.cluster__card_moreBtn_check} ${isEditing ? styles.editing : ""}`}
+            >
+                <CheckIcon />
+            </button>}
+            {!isEditing && <More
                 options={["edit", "delete"]}
                 handleClick={(option) => {
                     if (option === "edit") {
@@ -81,7 +81,7 @@ export function ClusterCard({ value, handleClick, isShown, handleClickMore, isSh
                     else if (option === "delete") handleDelete(value);
                 }}
                 isShow={isShowMore}
-            />
+            />}
         </div>
     )
 }
