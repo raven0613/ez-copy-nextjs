@@ -5,6 +5,14 @@
   stroke: currentColor;
 }
 
+.color {
+  border-radius: 50%;
+  transition: all 0.15s ease-out;
+  &:hover {
+    background: rgba($color: #ecd0a6, $alpha: 1);
+  }
+}
+
 .delete {
   border-radius: 50%;
   transition: all 0.15s ease-out;

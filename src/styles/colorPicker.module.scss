@@ -1,0 +1,10 @@
+.colorPicker {
+  position: absolute;
+  left: 100%;
+  bottom: 100%;
+  padding-left: 0.25rem;
+
+  &__input {
+    opacity: 0;
+  }
+}

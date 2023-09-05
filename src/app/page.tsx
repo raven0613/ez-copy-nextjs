@@ -37,6 +37,7 @@ export interface IUnit {
   id: string;
   value: string;
   tagList: Array<string>;
+  bgColor?: string;
 }
 
 export default function Home() {
@@ -123,6 +124,7 @@ export default function Home() {
     setShownTagList([]);
   }
   function handleSubmitEdit({ oldValue, newValue }: { oldValue: string, newValue: string }) {
+    if (allTagList.some(item => item === newValue)) return;
     const newAllTag = allTagList.map(item => {
       if (item === oldValue) return newValue;
       return item;
@@ -217,10 +219,10 @@ export default function Home() {
               index={i}
               data={unit as IUnit}
               allTags={allTagList}
-              handleSave={({ id, value, tagList }) => {
+              handleSave={({ id, value, tagList, bgColor }) => {
                 // save post
                 const editedList = textList.map(item => {
-                  if (item.id === id) return { id, value, tagList };
+                  if (item.id === id) return { id, value, tagList, bgColor };
                   return item;
                 })
                 setTextList(editedList);
@@ -295,6 +297,27 @@ export default function Home() {
                 }
                 localStorage.setItem("ez-copy", JSON.stringify(saveData));
               }}
+              handleChangeColor={(id: string, color: string) => {
+                const editedList = textList.map(item => {
+                  if (item.id === id) return { ...item, bgColor: color };
+                  return item;
+                })
+                setTextList(editedList);
+
+                setDisplayTextList(getDisplayList({
+                  textList: editedList || [],
+                  keyword: textKeyword || "",
+                  shownTagList: shownTagList || []
+                }) as IUnit[]);
+
+                const saveData = {
+                  user: {},
+                  tags: allTagList,
+                  shownTag: shownTagList,
+                  posts: editedList
+                }
+                localStorage.setItem("ez-copy", JSON.stringify(saveData));
+              }}
               idEditing={editingId === unit.id}
               isExist={existId === unit.id}
             />
@@ -309,7 +332,7 @@ export default function Home() {
             if (existedUnit) return setExsitId(existedUnit.id);
 
             // save post
-            const newTextList = [...textList, { id: uuid(), value: inputValue, tagList }];
+            const newTextList = [...textList, { id: uuid(), value: inputValue, tagList, bgColor: "#f1f0ef" }];
             setTextList(newTextList);
 
             // save tags

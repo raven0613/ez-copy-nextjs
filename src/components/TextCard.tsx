@@ -8,6 +8,8 @@ import { SuggestList, ISuggestList, suggestList } from "@/components/ControlPane
 import EditIcon from "./svg/EditIcon";
 import DeleteIcon from "./svg/DeleteIcon";
 import CheckIcon from "./svg/CheckIcon";
+import ColorPicker from "./ColorPicker";
+import PaletteIcon from "./svg/PaletteIcon";
 
 export const ItemTypes = {
     TEXTCARD: 'card',
@@ -22,23 +24,25 @@ interface DragItem {
 interface ITextCard {
     data: IUnit;
     index: number;
-    handleSave: (data: { id: string, value: string, tagList: string[] }) => void;
+    handleSave: (data: { id: string, value: string, tagList: string[], bgColor: string }) => void;
     handleDelete: (id: string) => void;
     handleClick: (id: string) => void;
     handleEdit: (id: string) => void;
     handleMoveCard: (dragIndex: number, hoverIndex: number) => void;
+    handleChangeColor: (id: string, color: string) => void;
     idEditing: boolean;
     isExist: boolean;
     allTags: Array<string>;
 }
 
-export default function TextCard({ data, index, handleSave, handleDelete, handleClick, handleEdit, handleMoveCard, idEditing, isExist, allTags }: ITextCard) {
+export default function TextCard({ data, index, handleSave, handleDelete, handleClick, handleEdit, handleMoveCard, idEditing, isExist, allTags, handleChangeColor }: ITextCard) {
     const [inputValue, setInputValue] = useState<string>("");
     const [inputTagValue, setInputTagValue] = useState<string>("");
     const [isClicked, setIsClicked] = useState<boolean>(false);
     const [tagList, setTagList] = useState<Array<string>>([]);
     const cardRef = useRef<HTMLDivElement>(null);
     const id = data.id;
+    const [bgColor, setBgColor] = useState<string>("#f1f0ef");
 
     const inputRef = useRef<HTMLTextAreaElement>(null);
     useAutosizeTextarea(inputRef, inputValue, idEditing);
@@ -49,6 +53,7 @@ export default function TextCard({ data, index, handleSave, handleDelete, handle
     useEffect(() => {
         if (!data) return;
         setTagList(data.tagList)
+        setBgColor(data.bgColor || "#f1f0ef");
     }, [data]);
 
     const [{ handlerId }, drop] = useDrop<DragItem, void, { handlerId: Identifier | null }>({
@@ -115,13 +120,26 @@ export default function TextCard({ data, index, handleSave, handleDelete, handle
         <div
             ref={cardRef}
             data-handler-id={handlerId}
-            className={`${styles.textCard} ${isExist && styles.textCard__exsit} ${isDragging && styles.textCard__isDragging}`}
+            className={`${styles.textCard} ${isExist ? styles.textCard__exsit : ""} ${isDragging ? styles.textCard__isDragging : ""}`}
             onClick={() => {
                 handleClick(data.id);
                 setIsClicked(true);
             }}
         >
-            {!idEditing && data.value}
+            <label
+                htmlFor={`color_${id}`} className={`${styles.textCard__colorCube}`}
+                style={{ backgroundColor: bgColor }}
+                onClick={e => {
+                    e.stopPropagation();
+                }}
+            >
+                <ColorPicker unitId={id} labelFor={`color_${id}`} handleGetColor={(color: string) => {
+                    setBgColor(color);
+                    handleChangeColor(id, color);
+                }} />
+            </label>
+            {/* <div className={styles.textCard__colorCube} style={{ backgroundColor: bgColor }}></div> */}
+            {!idEditing && <p className={styles.textCard__value}>{data.value}</p>}
             {idEditing &&
                 <textarea
                     ref={inputRef}
@@ -173,7 +191,7 @@ export default function TextCard({ data, index, handleSave, handleDelete, handle
                         className={`${styles.textCard__button} ${styles.textCard__button_submit}`}
                         onClick={e => {
                             e.stopPropagation();
-                            handleSave({ id: data.id, value: inputValue, tagList });
+                            handleSave({ id: data.id, value: inputValue, tagList, bgColor });
                         }}
                     >
                         <CheckIcon />
@@ -197,6 +215,15 @@ export default function TextCard({ data, index, handleSave, handleDelete, handle
                     >
                         <DeleteIcon />
                     </button>
+                    {/* <label
+                        htmlFor={`color_${id}`} className={`${styles.textCard__button} ${styles.textCard__button_color}`}>
+                        <PaletteIcon />
+                        <ColorPicker unitId={id} labelFor={`color_${id}`} handleGetColor={(color: string) => {
+                            setBgColor(color);
+                            handleChangeColor(id, color);
+                        }} />
+                    </label> */}
+
                 </div>
             </div>
             <span
