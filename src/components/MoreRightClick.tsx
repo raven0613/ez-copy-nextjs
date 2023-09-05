@@ -8,9 +8,9 @@ interface IMore {
     isShow: boolean;
 }
 
-export function More({ options, handleClick, isShow }: IMore) {
+export function MoreRightClick({ options, handleClick, isShow }: IMore) {
     return (
-        <div className={`${styles.more__container}`}>
+        <div className={`${styles.more_r__container} ${!isShow ? styles.hidden : ""}`}>
             {options?.map((item) => {
                 return (
                     <div
@@ -20,7 +20,7 @@ export function More({ options, handleClick, isShow }: IMore) {
                             e.stopPropagation();
                             handleClick(item);
                         }}
-                        className={`${styles.more__option} ${`styles.more__option_${item}`}`}
+                        className={`${styles.more_r__option} ${`styles.more__option_${item}`}`}
                     >
                         <RenderIcon option={item} />
                     </div>

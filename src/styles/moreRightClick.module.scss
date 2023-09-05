@@ -1,25 +1,26 @@
-.more__container {
+.more_r__container {
   width: fit-content;
   height: fit-content;
   position: absolute;
-  right: 0;
+  // left: 105%;
+  right: 10%;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   background-color: white;
   opacity: 1;
   transition: all 0.15s ease-out;
-  z-index: 0;
+  z-index: 10;
   background-color: transparent;
 }
 
-.more__option {
+.more_r__option {
   width: 2rem;
   height: 2rem;
   background-color: rgb(231, 231, 231);
   border-radius: 50%;
   margin-right: 0.5rem;
-  transition: all 0.05s ease-out;
+  transition: all 0.15s ease-out;
   &:hover {
     color: white;
   }

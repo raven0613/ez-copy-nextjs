@@ -33,7 +33,7 @@
 }
 
 .main_sidebar {
-  width: 15rem;
+  width: calc(15rem + 6px);
   height: 100%;
   padding: 1rem 1rem;
 }
